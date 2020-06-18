@@ -13,6 +13,7 @@ import { FormHandles } from '@unform/core';
 import * as Yup from 'yup';
 import Icon from 'react-native-vector-icons/Feather';
 import ImagePicker from 'react-native-image-picker';
+import ImageEditor from '@react-native-community/image-editor';
 
 import api from '../../services/api';
 
@@ -134,19 +135,31 @@ const Profile: React.FC = () => {
           takePhotoButtonTitle: 'Usar câmera',
           chooseFromLibraryButtonTitle: 'Escolher da galeria',
         },
-        (response) => {
+        async (response) => {
           if (response.didCancel) return;
           if (response.error) {
             Alert.alert('Erro ao atualizar seu avatar.');
             return;
           }
 
+          const croppedImage = await ImageEditor.cropImage(response.uri, {
+            offset: {
+              x: 0,
+              y: 0,
+            },
+            size: {
+              width: 300,
+              height: 300,
+            },
+            resizeMode: 'cover',
+          });
+
           const data = new FormData();
 
           data.append('avatar', {
             type: 'image/jpeg',
             name: `${user.id}.jpg`,
-            uri: response.uri,
+            uri: croppedImage,
           });
 
           api
